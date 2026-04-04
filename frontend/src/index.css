@@ -1,0 +1,99 @@
+/* Design tokens */
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-hover: #1e2d45;
+  --accent: #00e5ff;
+  --accent-dim: rgba(0, 229, 255, 0.15);
+  --accent-glow: rgba(0, 229, 255, 0.4);
+  --critical: #ef4444;
+  --critical-dim: rgba(239, 68, 68, 0.15);
+  --high: #f97316;
+  --high-dim: rgba(249, 115, 22, 0.15);
+  --medium: #3b82f6;
+  --medium-dim: rgba(59, 130, 246, 0.15);
+  --low: #22c55e;
+  --low-dim: rgba(34, 197, 94, 0.15);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #4b5563;
+  --border: rgba(255, 255, 255, 0.07);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  border: none;
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+/* Utility classes */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-critical { background: var(--critical-dim); color: var(--critical); }
+.badge-high     { background: var(--high-dim);     color: var(--high); }
+.badge-medium   { background: var(--medium-dim);   color: var(--medium); }
+.badge-low      { background: var(--low-dim);      color: var(--low); }
+.badge-neutral  { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+
+/* Active pulse animation */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 229, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fade-in 0.2s ease; }
