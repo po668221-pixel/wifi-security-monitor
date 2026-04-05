@@ -16,6 +16,9 @@ RUN python -m backend.scripts.train_demo_models
 
 RUN mkdir -p /app/data
 
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
 ENV PYTHONPATH=/app
 
 EXPOSE 8000

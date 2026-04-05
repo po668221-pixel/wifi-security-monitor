@@ -27,6 +27,16 @@ No component library (MUI/Chakra) — custom CSS keeps the design distinctive.
 
 ## Pages
 
+### 0. Login `/login`
+**JWT authentication gate**
+
+Components:
+- Login form with username/password fields
+- Submits to `POST /auth/login` via `authApi.js`
+- Stores JWT token in `localStorage`
+- Redirects to Dashboard on success
+- All other routes redirect here if token is missing or expired
+
 ### 1. Dashboard `/`
 **Command centre — answers "is my network under attack right now?"**
 
@@ -43,7 +53,7 @@ Components:
 Components:
 - `FilterBar` — severity / type / ack status, all client-side
 - `AlertTable + AlertRow` — columns: Severity, Type, Time, Device (resolved), Message, Status, Action
-- `AlertDetailDrawer` — slide-in panel with: device identity, alert context, Attack Brief (static per type), acknowledge + copy JSON
+- `AlertDetailDrawer` — slide-in panel with: device identity, alert context, Attack Brief (static per type), ML anomaly score, acknowledge + copy JSON
 - `AlertBurst` banner — fires when 3+ same-type alerts arrive within 2 min from WS
 - `ToastContainer` — non-blocking toast on new WS alerts, click → opens drawer
 
@@ -51,9 +61,21 @@ Components:
 **Network inventory — devices as primary objects, alerts as their attributes**
 
 Components:
-- `DeviceGrid` — card grid, each card: vendor icon, hostname, IP, MAC, VendorBadge, alert chips, first/last seen, active pulse (if last_seen < 5 min)
+- `DeviceGrid` — card grid, each card: vendor icon, hostname, IP, MAC, VendorBadge, alert chips, first/last seen, active pulse (if last_seen < 5 min), block/unblock/whitelist action buttons
 - `DeviceTimeline` — expandable per card, horizontal bar first_seen→last_seen with alert overlays
 - Unidentified device flag — `no hostname + unknown vendor` → amber `[UNIDENTIFIED DEVICE]` badge
+- Blocked device indicator — red `[BLOCKED]` badge, block/unblock calls `POST /api/devices/:mac/block|unblock`
+
+### 4. Settings `/settings`
+**Notification channel configuration and auto-block toggle**
+
+Components:
+- Auto-block toggle — `PATCH /api/settings` enables/disables automatic MAC blocking on CRITICAL/HIGH alerts
+- Email config — SMTP host, port, sender, recipient address
+- Slack config — webhook URL
+- Telegram config — bot token + chat ID
+- Test button per channel — calls `POST /api/settings/notifications/test`
+- All config persisted via `PATCH /api/settings/notifications`
 
 ---
 
@@ -62,20 +84,31 @@ Components:
 ```
 frontend/src/
   api/
-    devicesApi.js          ← GET /api/devices
+    authApi.js             ← POST /auth/login
+    devicesApi.js          ← GET /api/devices, POST block/unblock/whitelist
     alertsApi.js           ← GET /api/alerts, PATCH /api/alerts/:id/acknowledge
+    settingsApi.js         ← GET/PATCH /api/settings, notifications, test
   ws/
     useAlertStream.js      ← WS hook, exponential backoff reconnect
   hooks/
     useDevices.js          ← polls every 30s, exposes devices[] + deviceMap
     useAlerts.js           ← REST + WS merge, optimistic acknowledge
     useAlertStats.js       ← pure useMemo: threatScore, byType, hourlyBuckets, topDevices
+    useAuth.js             ← token state, login(), logout(), isAuthenticated
+    useSettings.js         ← fetches + updates settings and notification config
+  contexts/
+    AuthContext.jsx        ← provides auth state to all routes
+    AlertsContext.jsx      ← provides alerts[] + acknowledge() app-wide
+    DevicesContext.jsx     ← provides devices[] + deviceMap app-wide
+    SettingsContext.jsx    ← provides settings + notification config app-wide
   data/
     alertTypes.js          ← ALERT_TYPE_META: label, color, brief, responseSteps, MITRE per type
   pages/
+    LoginPage.jsx
     DashboardPage.jsx
     AlertsPage.jsx
     DevicesPage.jsx
+    SettingsPage.jsx
   components/
     layout/
       AppShell.jsx
@@ -104,9 +137,9 @@ frontend/src/
       AlertTypeBadge.jsx
       TimeAgo.jsx
       ToastContainer.jsx
-  App.jsx
+  App.jsx                  ← ProtectedRoute wrapper, all routes
   main.jsx
-  index.css
+  index.css                ← CSS variables: --medium is #3b82f6 (blue)
 ```
 
 ---
@@ -132,6 +165,18 @@ All `useMemo` over alerts array — zero extra API calls:
 ### `useDevices.js`
 - Polls `GET /api/devices` on mount + every 30s
 - Exposes both `devices[]` and `deviceMap` (Map<mac, Device>) for O(1) alert enrichment
+
+### `useAuth.js`
+- Reads JWT token from `localStorage` on init
+- `login(username, password)` → calls `POST /auth/login`, stores token
+- `logout()` → clears token, redirects to `/login`
+- `isAuthenticated` boolean used by `ProtectedRoute`
+
+### `useSettings.js`
+- Fetches `GET /api/settings` and `GET /api/settings/notifications` on mount
+- `updateAutoBlock(enabled)` → `PATCH /api/settings`
+- `updateNotifications(config)` → `PATCH /api/settings/notifications`
+- `testChannel(channel)` → `POST /api/settings/notifications/test`
 
 ---
 
@@ -169,11 +214,20 @@ export const ALERT_TYPE_META = {
 
 ## Backend Endpoints Used
 
-| Endpoint | Hook |
+| Endpoint | Hook / Component |
 |---|---|
-| `GET /api/devices` | useDevices |
-| `GET /api/alerts?skip&limit` | useAlerts |
-| `PATCH /api/alerts/{id}/acknowledge` | AcknowledgeButton |
+| `POST /auth/login` | authApi → useAuth |
+| `GET /api/devices` | devicesApi → useDevices |
+| `POST /api/devices/:mac/block` | devicesApi → DeviceCard |
+| `POST /api/devices/:mac/unblock` | devicesApi → DeviceCard |
+| `POST /api/devices/:mac/whitelist` | devicesApi → DeviceCard |
+| `GET /api/alerts?skip&limit` | alertsApi → useAlerts |
+| `PATCH /api/alerts/{id}/acknowledge` | alertsApi → AcknowledgeButton |
+| `GET /api/settings` | settingsApi → useSettings |
+| `PATCH /api/settings` | settingsApi → SettingsPage |
+| `GET /api/settings/notifications` | settingsApi → useSettings |
+| `PATCH /api/settings/notifications` | settingsApi → SettingsPage |
+| `POST /api/settings/notifications/test` | settingsApi → SettingsPage |
 | `WS /ws/alerts` | useAlertStream |
 
 ---
