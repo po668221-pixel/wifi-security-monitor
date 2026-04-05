@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Monitor — Devices</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <span class="logo">WiFi Monitor</span>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="alerts.html" class="nav-link">Alerts <span class="badge-count">3</span></a>
+    <a href="devices.html" class="nav-link active">Devices</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <button class="auto-block-toggle" id="autoblock-toggle" onclick="toggleAutoBlock()">Auto-Block: OFF</button>
+    <span class="live-dot connected">● Live</span>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header">
+    <h1 class="page-title">Devices</h1>
+    <span class="page-meta">4 devices · refreshes every 30s</span>
+  </div>
+
+  <div class="device-grid">
+
+    <!-- Device 1 — Active, known, has alerts -->
+    <div class="device-card active-device">
+      <div class="device-card-header">
+        <div>
+          <div class="device-hostname">johns-laptop</div>
+          <div class="device-mac mono">aa:bb:cc:dd:ee:ff</div>
+        </div>
+        <span class="active-pill">Active</span>
+      </div>
+      <div class="device-fields">
+        <div class="device-field"><span class="field-key">IP</span><span class="field-val mono">192.168.1.10</span></div>
+        <div class="device-field"><span class="field-key">Vendor</span><span class="badge badge-neutral">Apple</span></div>
+        <div class="device-field"><span class="field-key">Last seen</span><span class="field-val muted">2 min ago</span></div>
+      </div>
+      <div class="alert-chips">
+        <span class="badge badge-critical">Critical ×1</span>
+        <span class="badge badge-high">High ×1</span>
+      </div>
+      <div class="device-actions">
+        <button class="btn-block" onclick="blockDevice(this)">Block</button>
+        <button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>
+      </div>
+      <button class="timeline-btn" onclick="toggleTimeline(this)">▼ Show timeline</button>
+      <div class="timeline hidden">
+        <div class="tl-label">Device timeline</div>
+        <div class="tl-track">
+          <div class="tl-bar"></div>
+          <div class="tl-marker" style="left:10%;background:#ef4444" title="Evil Twin AP — 2 min ago"></div>
+          <div class="tl-marker" style="left:30%;background:#f97316" title="ARP Spoof — 15 min ago"></div>
+        </div>
+        <div class="tl-dates">
+          <span>3 days ago</span><span>now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 2 — Blocked (rogue signal) -->
+    <div class="device-card active-device blocked-device">
+      <div class="device-card-header">
+        <div>
+          <div class="device-hostname" style="color:var(--medium)">192.168.1.55</div>
+          <div class="device-mac mono">de:ad:be:ef:00:55</div>
+        </div>
+        <span class="blocked-pill">Blocked</span>
+      </div>
+      <div class="device-fields">
+        <div class="device-field"><span class="field-key">IP</span><span class="field-val mono">192.168.1.55</span></div>
+        <div class="device-field"><span class="field-key">Vendor</span><span class="badge badge-warn">UNIDENTIFIED</span></div>
+        <div class="device-field"><span class="field-key">Last seen</span><span class="field-val muted">47 min ago</span></div>
+      </div>
+      <div class="alert-chips">
+        <span class="badge badge-medium">Medium ×1</span>
+      </div>
+      <div class="device-actions">
+        <button class="btn-unblock" onclick="unblockDevice(this)">Unblock</button>
+        <button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>
+      </div>
+      <button class="timeline-btn" onclick="toggleTimeline(this)">▼ Show timeline</button>
+      <div class="timeline hidden">
+        <div class="tl-label">Device timeline</div>
+        <div class="tl-track">
+          <div class="tl-bar"></div>
+          <div class="tl-marker" style="left:85%;background:#3b82f6" title="Port Scan — 47 min ago"></div>
+        </div>
+        <div class="tl-dates">
+          <span>1 hour ago</span><span>now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 3 — Inactive, known -->
+    <div class="device-card">
+      <div class="device-card-header">
+        <div>
+          <div class="device-hostname">router-gateway</div>
+          <div class="device-mac mono">b8:27:eb:11:22:33</div>
+        </div>
+      </div>
+      <div class="device-fields">
+        <div class="device-field"><span class="field-key">IP</span><span class="field-val mono">192.168.1.1</span></div>
+        <div class="device-field"><span class="field-key">Vendor</span><span class="badge badge-neutral">Raspberry Pi</span></div>
+        <div class="device-field"><span class="field-key">Last seen</span><span class="field-val muted">2 hours ago</span></div>
+      </div>
+      <div class="alert-chips">
+        <span style="font-size:11px;color:var(--text-muted)">No alerts</span>
+      </div>
+      <div class="device-actions">
+        <button class="btn-block" onclick="blockDevice(this)">Block</button>
+        <button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>
+      </div>
+      <button class="timeline-btn" onclick="toggleTimeline(this)">▼ Show timeline</button>
+      <div class="timeline hidden">
+        <div class="tl-label">Device timeline</div>
+        <div class="tl-track">
+          <div class="tl-bar"></div>
+        </div>
+        <div class="tl-dates">
+          <span>7 days ago</span><span>now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device 4 — Inactive, known -->
+    <div class="device-card">
+      <div class="device-card-header">
+        <div>
+          <div class="device-hostname">sarahs-phone</div>
+          <div class="device-mac mono">fc:01:7c:44:55:66</div>
+        </div>
+      </div>
+      <div class="device-fields">
+        <div class="device-field"><span class="field-key">IP</span><span class="field-val mono">192.168.1.22</span></div>
+        <div class="device-field"><span class="field-key">Vendor</span><span class="badge badge-neutral">Samsung</span></div>
+        <div class="device-field"><span class="field-key">Last seen</span><span class="field-val muted">5 hours ago</span></div>
+      </div>
+      <div class="alert-chips">
+        <span style="font-size:11px;color:var(--text-muted)">No alerts</span>
+      </div>
+      <div class="device-actions">
+        <button class="btn-block" onclick="blockDevice(this)">Block</button>
+        <button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>
+      </div>
+      <button class="timeline-btn" onclick="toggleTimeline(this)">▼ Show timeline</button>
+      <div class="timeline hidden">
+        <div class="tl-label">Device timeline</div>
+        <div class="tl-track">
+          <div class="tl-bar"></div>
+        </div>
+        <div class="tl-dates">
+          <span>2 days ago</span><span>now</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+function toggleTimeline(btn) {
+  const tl = btn.nextElementSibling
+  const open = !tl.classList.contains('hidden')
+  tl.classList.toggle('hidden')
+  btn.textContent = open ? '▼ Show timeline' : '▲ Hide timeline'
+}
+
+function blockDevice(btn) {
+  const card = btn.closest('.device-card')
+  card.classList.add('blocked-device')
+  const header = card.querySelector('.device-card-header')
+  const existingPill = header.querySelector('.active-pill, .blocked-pill')
+  if (existingPill) existingPill.outerHTML = '<span class="blocked-pill">Blocked</span>'
+  else header.insertAdjacentHTML('beforeend', '<span class="blocked-pill">Blocked</span>')
+  const actions = btn.closest('.device-actions')
+  actions.innerHTML = '<button class="btn-unblock" onclick="unblockDevice(this)">Unblock</button><button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>'
+}
+
+function unblockDevice(btn) {
+  const card = btn.closest('.device-card')
+  card.classList.remove('blocked-device')
+  const pill = card.querySelector('.blocked-pill')
+  if (pill) pill.remove()
+  const actions = btn.closest('.device-actions')
+  actions.innerHTML = '<button class="btn-block" onclick="blockDevice(this)">Block</button><button class="btn-whitelist" onclick="whitelistDevice(this)">Whitelist</button>'
+}
+
+function whitelistDevice(btn) {
+  const card = btn.closest('.device-card')
+  card.classList.remove('blocked-device')
+  const pill = card.querySelector('.blocked-pill, .active-pill')
+  if (pill) pill.outerHTML = '<span style="font-size:10px;color:#22c55e;background:rgba(34,197,94,0.12);padding:2px 8px;border-radius:10px">Whitelisted</span>'
+  btn.closest('.device-actions').remove()
+}
+
+function toggleAutoBlock() {
+  const btn = document.getElementById('autoblock-toggle')
+  const on = btn.classList.toggle('on')
+  btn.textContent = on ? 'AUTO-BLOCK: ON' : 'Auto-Block: OFF'
+}
+</script>
+</body>
+</html>

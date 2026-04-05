@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Monitor — Alerts</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <span class="logo">WiFi Monitor</span>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="alerts.html" class="nav-link active">Alerts <span class="badge-count">3</span></a>
+    <a href="devices.html" class="nav-link">Devices</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <button class="auto-block-toggle" id="autoblock-toggle" onclick="toggleAutoBlock()">Auto-Block: OFF</button>
+    <span class="live-dot connected">● Live</span>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header">
+    <h1 class="page-title">Alerts</h1>
+    <span class="page-meta">3 unacknowledged · 4 total</span>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-row">
+      <span class="filter-label">Severity</span>
+      <button class="filter-pill active" onclick="setFilter(this,'sev')">ALL</button>
+      <button class="filter-pill" onclick="setFilter(this,'sev')">CRITICAL</button>
+      <button class="filter-pill" onclick="setFilter(this,'sev')">HIGH</button>
+      <button class="filter-pill" onclick="setFilter(this,'sev')">MEDIUM</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Type</span>
+      <button class="filter-pill active" onclick="setFilter(this,'type')">ALL</button>
+      <button class="filter-pill" onclick="setFilter(this,'type')">ARP SPOOF</button>
+      <button class="filter-pill" onclick="setFilter(this,'type')">DEAUTH FLOOD</button>
+      <button class="filter-pill" onclick="setFilter(this,'type')">EVIL TWIN</button>
+      <button class="filter-pill" onclick="setFilter(this,'type')">PORT SCAN</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Status</span>
+      <button class="filter-pill active" onclick="setFilter(this,'status')">ALL</button>
+      <button class="filter-pill" onclick="setFilter(this,'status')">UNACKNOWLEDGED</button>
+      <button class="filter-pill" onclick="setFilter(this,'status')">ACKNOWLEDGED</button>
+    </div>
+  </div>
+
+  <!-- Alert table -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="alert-table">
+      <thead>
+        <tr>
+          <th>Severity</th><th>Type</th><th>Time</th><th>Device</th><th>Message</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="alert-row" onclick="openDrawer('evil-twin')">
+          <td><span class="badge badge-critical">Critical</span></td>
+          <td><span class="badge badge-type">👁 Evil Twin AP</span></td>
+          <td class="time-cell">2 min ago</td>
+          <td class="mono">johns-laptop</td>
+          <td class="msg-cell">Evil twin detected: ssid=HomeNet rogue_bssid=de:ad:be:ef:00:01</td>
+          <td onclick="event.stopPropagation()"><button class="ack-btn" onclick="acknowledge(this)">Acknowledge</button></td>
+        </tr>
+        <tr class="alert-row" onclick="openDrawer('arp')">
+          <td><span class="badge badge-high">High</span></td>
+          <td><span class="badge badge-type">↔ ARP Spoofing</span></td>
+          <td class="time-cell">15 min ago</td>
+          <td class="mono">johns-laptop</td>
+          <td class="msg-cell">ARP spoof: ip=192.168.1.1 mac=aa:bb:cc:dd:ee:ff known_mac=00:11:22:33:44:55</td>
+          <td onclick="event.stopPropagation()"><button class="ack-btn" onclick="acknowledge(this)">Acknowledge</button></td>
+        </tr>
+        <tr class="alert-row" onclick="openDrawer('deauth')">
+          <td><span class="badge badge-high">High</span></td>
+          <td><span class="badge badge-type">⚡ Deauth Flood</span></td>
+          <td class="time-cell">31 min ago</td>
+          <td class="mono">aa:bb:cc:dd:ee:ff</td>
+          <td class="msg-cell">Deauth flood detected on bssid=aa:bb:cc:dd:ee:ff</td>
+          <td onclick="event.stopPropagation()"><button class="ack-btn" onclick="acknowledge(this)">Acknowledge</button></td>
+        </tr>
+        <tr class="alert-row acknowledged" onclick="openDrawer('portscan')">
+          <td><span class="badge badge-medium">Medium</span></td>
+          <td><span class="badge badge-type">🔍 Port Scan</span></td>
+          <td class="time-cell">47 min ago</td>
+          <td class="mono">192.168.1.55</td>
+          <td class="msg-cell">Port scan detected: src=192.168.1.55</td>
+          <td onclick="event.stopPropagation()"><span class="acked-label">Acknowledged</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Detail Drawer -->
+<div id="drawer-overlay" class="drawer-overlay hidden" onclick="closeDrawer()"></div>
+<div id="detail-drawer" class="detail-drawer hidden">
+  <div class="drawer-header">
+    <div id="drawer-badges" class="drawer-badges"></div>
+    <button class="drawer-close" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<script>
+const ALERTS = {
+  'evil-twin': {
+    badges: '<span class="badge badge-critical">Critical</span><span class="badge badge-type">👁 Evil Twin AP</span>',
+    time: '2 minutes ago',
+    device: {hostname:'johns-laptop', ip:'192.168.1.10', mac:'aa:bb:cc:dd:ee:ff', vendor:'Apple, Inc.', first:'3 days ago', last:'2 min ago'},
+    msg: 'Evil twin detected: ssid=HomeNet rogue_bssid=de:ad:be:ef:00:01',
+    id: 'ALT-A1B2C',
+    brief: 'A rogue access point is broadcasting the same SSID as your legitimate network with a different BSSID. Clients may connect to it, exposing credentials and traffic.',
+    steps: ['Immediately identify the rogue BSSID from the alert details','Use a WiFi scanner to physically locate the rogue AP','Warn network users not to connect to the duplicate SSID','Enable AP isolation and BSSID whitelisting if your infrastructure supports it'],
+    mitre: 'T1557'
+  },
+  'arp': {
+    badges: '<span class="badge badge-high">High</span><span class="badge badge-type">↔ ARP Spoofing</span>',
+    time: '15 minutes ago',
+    device: {hostname:'johns-laptop', ip:'192.168.1.10', mac:'aa:bb:cc:dd:ee:ff', vendor:'Apple, Inc.', first:'3 days ago', last:'15 min ago'},
+    msg: 'ARP spoof: ip=192.168.1.1 mac=aa:bb:cc:dd:ee:ff known_mac=00:11:22:33:44:55',
+    id: 'ALT-D3E4F',
+    brief: 'An attacker is broadcasting fake ARP replies to poison ARP caches on the network, redirecting traffic through their machine (man-in-the-middle).',
+    steps: ['Identify the spoofing device MAC in the alert details','Cross-reference with the Devices page — is this a known device?','Physically locate and disconnect the rogue device','Enable Dynamic ARP Inspection (DAI) on managed switches'],
+    mitre: 'T1557.002'
+  },
+  'deauth': {
+    badges: '<span class="badge badge-high">High</span><span class="badge badge-type">⚡ Deauth Flood</span>',
+    time: '31 minutes ago',
+    device: null,
+    msg: 'Deauth flood detected on bssid=aa:bb:cc:dd:ee:ff (11 frames in 5s)',
+    id: 'ALT-G5H6I',
+    brief: 'A flood of 802.11 deauthentication frames is being sent, forcibly disconnecting clients. Commonly used as a precursor to an evil twin or credential capture attack.',
+    steps: ['Identify the BSSID sending deauth frames','Compare against your known AP list on the Devices page','Enable Management Frame Protection (802.11w) on your access point'],
+    mitre: 'T1498'
+  },
+  'portscan': {
+    badges: '<span class="badge badge-medium">Medium</span><span class="badge badge-type">🔍 Port Scan</span>',
+    time: '47 minutes ago',
+    device: {hostname:null, ip:'192.168.1.55', mac:'de:ad:be:ef:00:55', vendor:null, first:'1 hour ago', last:'47 min ago'},
+    msg: 'Port scan detected: src=192.168.1.55 (16 ports in 10s)',
+    id: 'ALT-J7K8L',
+    brief: 'A device is probing a large number of ports on the network in a short time window — reconnaissance activity that often precedes a targeted attack.',
+    steps: ['Identify the source IP from the alert details','Check if this is an authorised network scanner','If unknown, isolate the device and investigate'],
+    mitre: 'T1046'
+  }
+}
+
+function openDrawer(key) {
+  const a = ALERTS[key]
+  document.getElementById('drawer-badges').innerHTML = a.badges + `<span class="drawer-time">${a.time}</span>`
+  const dev = a.device ? `
+    <div class="drawer-field"><span class="drawer-key">Hostname</span><span class="drawer-val">${a.device.hostname || '—'}</span></div>
+    <div class="drawer-field"><span class="drawer-key">IP</span><span class="drawer-val">${a.device.ip}</span></div>
+    <div class="drawer-field"><span class="drawer-key">MAC</span><span class="drawer-val mono">${a.device.mac}</span></div>
+    <div class="drawer-field"><span class="drawer-key">Vendor</span><span class="drawer-val">${a.device.vendor || '<span class="badge-warn">Unknown</span>'}</span></div>
+    <div class="drawer-field"><span class="drawer-key">First seen</span><span class="drawer-val">${a.device.first}</span></div>
+    <div class="drawer-field"><span class="drawer-key">Last seen</span><span class="drawer-val">${a.device.last}</span></div>
+  ` : '<p class="drawer-no-device">Device not in inventory — may be a rogue device.</p>'
+
+  document.getElementById('drawer-body').innerHTML = `
+    <section class="drawer-section">
+      <h3 class="drawer-section-title">Suspected Device</h3>
+      ${dev}
+    </section>
+    <section class="drawer-section">
+      <h3 class="drawer-section-title">Alert Context</h3>
+      <p class="drawer-msg">${a.msg}</p>
+      <p class="drawer-id">ID: ${a.id}</p>
+    </section>
+    <section class="drawer-section attack-brief">
+      <h3 class="drawer-section-title">Attack Brief</h3>
+      <p class="brief-text">${a.brief}</p>
+      <h4 class="steps-title">Response Steps</h4>
+      <ol class="steps-list">${a.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      <p class="mitre-ref">MITRE ATT&CK: ${a.mitre}</p>
+    </section>
+    <div class="drawer-actions">
+      <button class="ack-btn" onclick="this.textContent='Acknowledged';this.disabled=true;this.style.opacity=0.5">Acknowledge</button>
+      ${a.device ? `<button class="block-btn" onclick="this.textContent='Blocked';this.disabled=true;this.style.opacity=0.6">Block Device</button>` : ''}
+      <button class="copy-btn" onclick="this.textContent='Copied!'">Copy JSON</button>
+    </div>
+  `
+  document.getElementById('drawer-overlay').classList.remove('hidden')
+  document.getElementById('detail-drawer').classList.remove('hidden')
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.add('hidden')
+  document.getElementById('detail-drawer').classList.add('hidden')
+}
+
+function acknowledge(btn) {
+  btn.textContent = 'Acknowledged'
+  btn.disabled = true
+  btn.style.opacity = 0.5
+  btn.closest('tr').style.opacity = 0.5
+}
+
+function setFilter(btn, group) {
+  btn.closest('.filter-row').querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+
+function toggleAutoBlock() {
+  const btn = document.getElementById('autoblock-toggle')
+  const on = btn.classList.toggle('on')
+  btn.textContent = on ? 'AUTO-BLOCK: ON' : 'Auto-Block: OFF'
+}
+</script>
+</body>
+</html>

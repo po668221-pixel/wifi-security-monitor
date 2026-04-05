@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Monitor — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <span class="logo">WiFi Monitor</span>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+    <a href="alerts.html" class="nav-link">Alerts <span class="badge-count">3</span></a>
+    <a href="devices.html" class="nav-link">Devices</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px">
+    <button class="auto-block-toggle" id="autoblock-toggle" onclick="toggleAutoBlock()">Auto-Block: OFF</button>
+    <span class="live-dot connected">● Live</span>
+  </div>
+</nav>
+
+<main class="container">
+  <h1 class="page-title">Dashboard</h1>
+
+  <!-- Summary cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Unacknowledged</div>
+      <div class="summary-value" style="color:var(--accent)">3</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Critical (60m)</div>
+      <div class="summary-value" style="color:var(--critical)">1</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">High (60m)</div>
+      <div class="summary-value" style="color:var(--high)">2</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Medium (60m)</div>
+      <div class="summary-value" style="color:var(--medium)">1</div>
+    </div>
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- Threat Meter -->
+    <div class="card threat-card">
+      <div class="card-label">Threat Level</div>
+      <svg width="160" height="160" viewBox="0 0 160 160" class="gauge-svg">
+        <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10"/>
+        <circle cx="80" cy="80" r="60" fill="none" stroke="#f97316" stroke-width="10"
+          stroke-dasharray="377" stroke-dashoffset="132"
+          stroke-linecap="round" transform="rotate(-90 80 80)"/>
+        <text x="80" y="76" text-anchor="middle" fill="#f97316" font-size="28" font-weight="700">65</text>
+        <text x="80" y="98" text-anchor="middle" fill="#4b5563" font-size="10">ELEVATED</text>
+      </svg>
+      <div class="gauge-legend">
+        <span><span style="color:#ef4444">●</span> CRITICAL</span>
+        <span><span style="color:#f97316">●</span> HIGH</span>
+        <span><span style="color:#3b82f6">●</span> MEDIUM</span>
+      </div>
+    </div>
+
+    <!-- Alert Rate Chart -->
+    <div class="card chart-card">
+      <div class="card-label">Alert Rate — Last 60 min</div>
+      <div class="bar-chart">
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:10px;background:#3b82f6"></div>
+          </div>
+          <span class="bar-lbl">-60m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack"><div class="bar-seg" style="height:0px"></div></div>
+          <span class="bar-lbl">-55m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:20px;background:#f97316"></div>
+          </div>
+          <span class="bar-lbl">-50m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack"><div class="bar-seg" style="height:0px"></div></div>
+          <span class="bar-lbl">-45m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:15px;background:#f97316"></div>
+          </div>
+          <span class="bar-lbl">-40m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack"><div class="bar-seg" style="height:0px"></div></div>
+          <span class="bar-lbl">-35m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:40px;background:#ef4444"></div>
+            <div class="bar-seg" style="height:20px;background:#f97316"></div>
+          </div>
+          <span class="bar-lbl">-30m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:10px;background:#3b82f6"></div>
+          </div>
+          <span class="bar-lbl">-25m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack"><div class="bar-seg" style="height:0px"></div></div>
+          <span class="bar-lbl">-20m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:25px;background:#f97316"></div>
+          </div>
+          <span class="bar-lbl">-15m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack"><div class="bar-seg" style="height:0px"></div></div>
+          <span class="bar-lbl">-10m</span>
+        </div>
+        <div class="bar-col">
+          <div class="bar-stack">
+            <div class="bar-seg" style="height:30px;background:#f97316"></div>
+            <div class="bar-seg" style="height:10px;background:#3b82f6"></div>
+          </div>
+          <span class="bar-lbl">now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Alert Feed -->
+    <div class="card feed-card">
+      <div class="feed-header">
+        <span class="card-label">Live Feed</span>
+        <a href="alerts.html" class="view-all">View all →</a>
+      </div>
+      <div class="feed-list">
+        <div class="feed-item">
+          <div class="feed-badges">
+            <span class="badge badge-critical">Critical</span>
+            <span class="badge badge-type">👁 Evil Twin AP</span>
+          </div>
+          <p class="feed-msg">Evil twin detected: ssid=HomeNet rogue_bssid=de:ad:be:ef:00:01</p>
+          <span class="feed-time">2 min ago</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-badges">
+            <span class="badge badge-high">High</span>
+            <span class="badge badge-type">↔ ARP Spoofing</span>
+          </div>
+          <p class="feed-msg">ARP spoof: ip=192.168.1.1 mac=aa:bb:cc:dd:ee:ff</p>
+          <span class="feed-time">15 min ago</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-badges">
+            <span class="badge badge-high">High</span>
+            <span class="badge badge-type">⚡ Deauth Flood</span>
+          </div>
+          <p class="feed-msg">Deauth flood detected: bssid=aa:bb:cc:dd:ee:ff</p>
+          <span class="feed-time">31 min ago</span>
+        </div>
+        <div class="feed-item">
+          <div class="feed-badges">
+            <span class="badge badge-medium">Medium</span>
+            <span class="badge badge-type">🔍 Port Scan</span>
+          </div>
+          <p class="feed-msg">Port scan: src=192.168.1.55</p>
+          <span class="feed-time">47 min ago</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom grid -->
+  <div class="bottom-grid">
+
+    <!-- Attack Type Breakdown -->
+    <div class="card">
+      <div class="card-label">Attack Types</div>
+      <div class="donut-row">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="45" fill="none" stroke="#ef4444" stroke-width="18" stroke-dasharray="70 213" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="45" fill="none" stroke="#f97316" stroke-width="18" stroke-dasharray="141 142" stroke-dashoffset="-70" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="45" fill="none" stroke="#3b82f6" stroke-width="18" stroke-dasharray="35 248" stroke-dashoffset="-211" transform="rotate(-90 60 60)"/>
+        </svg>
+        <div class="donut-legend">
+          <div class="donut-item"><span class="dot" style="background:#ef4444"></span><span class="donut-lbl">Evil Twin AP</span><span class="donut-val" style="color:#ef4444">1</span></div>
+          <div class="donut-item"><span class="dot" style="background:#f97316"></span><span class="donut-lbl">ARP Spoof / Deauth</span><span class="donut-val" style="color:#f97316">2</span></div>
+          <div class="donut-item"><span class="dot" style="background:#3b82f6"></span><span class="donut-lbl">Port Scan</span><span class="donut-val" style="color:#3b82f6">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Threatened Devices -->
+    <div class="card">
+      <div class="card-label">Most Targeted Devices</div>
+      <div class="top-devices">
+        <div class="device-row">
+          <div class="device-info">
+            <span class="device-rank">#1</span>
+            <span class="device-name">johns-laptop</span>
+          </div>
+          <span class="device-alert-count">3 alerts</span>
+        </div>
+        <div class="device-bar-track"><div class="device-bar" style="width:100%;background:var(--high)"></div></div>
+
+        <div class="device-row" style="margin-top:12px">
+          <div class="device-info">
+            <span class="device-rank">#2</span>
+            <span class="device-name">192.168.1.55</span>
+          </div>
+          <span class="device-alert-count">1 alert</span>
+        </div>
+        <div class="device-bar-track"><div class="device-bar" style="width:33%;background:var(--high)"></div></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+function toggleAutoBlock() {
+  const btn = document.getElementById('autoblock-toggle')
+  const on = btn.classList.toggle('on')
+  btn.textContent = on ? 'AUTO-BLOCK: ON' : 'Auto-Block: OFF'
+}
+</script>
+</body>
+</html>
